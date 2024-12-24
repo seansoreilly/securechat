@@ -2,7 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import type { Message } from './src/types/chat';
+import type { Message } from './src/types/chat.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -36,7 +36,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('sendMessage', (message: Message) => {
-    io.to(message.sender).emit('messageReceived', message);
+    // Broadcast the message to everyone in the room
+    const roomId = Array.from(socket.rooms)[1]; // First room is socket's own room
+    if (roomId) {
+      io.to(roomId).emit('messageReceived', message);
+    }
   });
 
   socket.on('startTyping', (roomId: string, participant: string) => {
